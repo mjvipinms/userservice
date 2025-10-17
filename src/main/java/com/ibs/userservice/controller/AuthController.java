@@ -2,6 +2,7 @@ package com.ibs.userservice.controller;
 
 import com.ibs.userservice.dtos.requestDtos.AuthRequest;
 import com.ibs.userservice.dtos.responseDtos.AuthResponse;
+import com.ibs.userservice.security.AppUserDetails;
 import com.ibs.userservice.security.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,7 +45,12 @@ public class AuthController {
             String token = jwtUtil.generateToken(user);
             String role = user.getAuthorities().stream().findFirst().map(GrantedAuthority::getAuthority).orElse("USER");
             log.info("Successfully generated token and exiting from login");
-            return ResponseEntity.ok(new AuthResponse(token,role));
+            AppUserDetails appUserDetails = (AppUserDetails) authentication.getPrincipal();
+            var userDet = appUserDetails.user();
+            Integer userId = userDet.getUserId();
+            String userName = userDet.getUserName();
+
+            return ResponseEntity.ok(new AuthResponse(token,role,userId,userName));
         } catch (Exception e) {
             log.error("Exception occurred in login {}", e.getMessage());
             throw new RuntimeException(e);

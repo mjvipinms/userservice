@@ -7,11 +7,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
@@ -38,7 +43,7 @@ public class UserController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'HR', 'PANEL')")
     @GetMapping
     public Page<UserResponseDTO> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0") int page ,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("userId").ascending());
         return userService.getAllUsers(pageable);
@@ -85,6 +90,22 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size) {
 
         Page<UserResponseDTO> response = userService.getUsersByRole(role, page, size);
+        return ResponseEntity.ok(response);
+    }
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR')")
+    @GetMapping("/all/role/{role}")
+    public ResponseEntity<List<UserResponseDTO>> getUsersByRoleWithoutPagination(
+            @PathVariable String role) {
+        List<UserResponseDTO> response = userService.getAllUsersByRole(role);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR')")
+    @GetMapping("/available/panelist")
+    public ResponseEntity<List<UserResponseDTO>> getUsersAsPanelWithSameSlot(
+            @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam("endTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
+        List<UserResponseDTO> response = userService.getUsersAsPanelWithSameSlot(startTime, endTime);
         return ResponseEntity.ok(response);
     }
 }

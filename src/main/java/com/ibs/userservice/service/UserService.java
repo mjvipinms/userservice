@@ -1,12 +1,15 @@
 package com.ibs.userservice.service;
 
 import com.ibs.userservice.dtos.requestDtos.UserRequestDTO;
+import com.ibs.userservice.dtos.responseDtos.SlotResponseDto;
 import com.ibs.userservice.dtos.responseDtos.UserResponseDTO;
+import com.ibs.userservice.feign.SlotClient;
 import com.ibs.userservice.mapper.UserMapper;
 import com.ibs.userservice.entity.Role;
 import com.ibs.userservice.entity.User;
 import com.ibs.userservice.repository.RoleRepository;
 import com.ibs.userservice.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,22 +17,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-    }
+    private final SlotClient slotClient;
 
     /**
      *
@@ -139,12 +142,46 @@ public class UserService {
         try {
             log.info("Entering into getUsersByRole: {} page: {} size: {}", role, page, size);
             PageRequest pageable = PageRequest.of(page, size);
-            Role roleData = roleRepository.findByRoleNameIgnoreCase(role).orElseThrow(() -> new RuntimeException("Invalid rome ,"+role));
+            Role roleData = roleRepository.findByRoleNameIgnoreCase(role).orElseThrow(() -> new RuntimeException("Invalid rome ," + role));
             Page<User> userPage = userRepository.findByRole(roleData, pageable);
             return userPage.map(UserMapper::toResponseDTO);
         } catch (Exception e) {
             log.error("Exception occurred in getUsersByRole, {}", e.getMessage());
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     *
+     * @param role user role
+     * @return list users by role
+     */
+    public List<UserResponseDTO> getAllUsersByRole(String role) {
+        return userRepository.findByRole_RoleNameIgnoreCase(role).stream().map(UserMapper::toResponseDTO).toList();
+    }
+
+    /**
+     * connect to interview-scheduler service via feign client and slot details
+     * @param startTime key field in slot table and get from UI
+     * @param endTime key field in slot table and get from UI
+     * @return available panelist at a specific time.
+     */
+    public List<UserResponseDTO> getUsersAsPanelWithSameSlot(LocalDateTime startTime, LocalDateTime endTime) {
+        log.info("Fetching available panelists");
+        try {
+            List<SlotResponseDto> slots = slotClient.getAvailableSlots(startTime, endTime);
+            if (slots == null || slots.isEmpty()) {
+                return Collections.emptyList();
+            }
+            Set<Integer> userAsPanelistIds = slots.stream().map(SlotResponseDto::getPanelistId).filter(Objects::nonNull).
+                    collect(Collectors.toSet());
+            if (userAsPanelistIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+            List<User> users = userRepository.findAllById(userAsPanelistIds);
+            return users.stream().map(UserMapper::toResponseDTO).toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Exception occurred at feign "+e.getMessage());
         }
     }
 }
