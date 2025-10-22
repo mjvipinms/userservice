@@ -108,4 +108,17 @@ public class UserController {
         List<UserResponseDTO> response = userService.getUsersAsPanelWithSameSlot(startTime, endTime);
         return ResponseEntity.ok(response);
     }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR','PANEL')")
+    @GetMapping("/all")
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        List<UserResponseDTO> response = userService.getAllUsers();
+        return ResponseEntity.ok(response);
+    }
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR','PANEL')")
+    @GetMapping("/panelists/pending")
+    public ResponseEntity<List<UserResponseDTO>> getPendingPanelists() {
+        List<UserResponseDTO> pending = userService.getPendingPanelists();
+        return ResponseEntity.ok(pending);
+    }
 }

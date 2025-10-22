@@ -162,8 +162,9 @@ public class UserService {
 
     /**
      * connect to interview-scheduler service via feign client and slot details
+     *
      * @param startTime key field in slot table and get from UI
-     * @param endTime key field in slot table and get from UI
+     * @param endTime   key field in slot table and get from UI
      * @return available panelist at a specific time.
      */
     public List<UserResponseDTO> getUsersAsPanelWithSameSlot(LocalDateTime startTime, LocalDateTime endTime) {
@@ -173,15 +174,40 @@ public class UserService {
             if (slots == null || slots.isEmpty()) {
                 return Collections.emptyList();
             }
-            Set<Integer> userAsPanelistIds = slots.stream().map(SlotResponseDto::getPanelistId).filter(Objects::nonNull).
-                    collect(Collectors.toSet());
+            Set<Integer> userAsPanelistIds = slots.stream().map(SlotResponseDto::getPanelistId).filter(Objects::nonNull).collect(Collectors.toSet());
             if (userAsPanelistIds.isEmpty()) {
                 return Collections.emptyList();
             }
             List<User> users = userRepository.findAllById(userAsPanelistIds);
             return users.stream().map(UserMapper::toResponseDTO).toList();
         } catch (Exception e) {
-            throw new RuntimeException("Exception occurred at feign "+e.getMessage());
+            throw new RuntimeException("Exception occurred at feign " + e.getMessage());
         }
+    }
+
+    /**
+     *
+     * @return List<UserResponseDTO>
+     */
+    public List<UserResponseDTO> getAllUsers() {
+        List<User> userPage = userRepository.findAll();
+        return userPage.stream().map(UserMapper::toResponseDTO).toList();
+    }
+
+    /**
+     *
+     * @return List<UserResponseDTO>
+     */
+    public List<UserResponseDTO> getPendingPanelists() {
+        log.info("Fetching all pending panellist");
+        List<User> panelists = userRepository.findByRole_RoleNameIgnoreCase("PANEL");
+        try {
+            List<SlotResponseDto> slots = slotClient.getAllSlots();
+            return panelists.stream().filter(p -> slots.stream().noneMatch(s -> Objects.equals(s.getPanelistId(), p.getUserId()))).map(UserMapper::toResponseDTO).toList();
+        } catch (Exception e) {
+            log.error("Exception occurred at getPendingPanelists");
+            throw new RuntimeException(e);
+        }
+
     }
 }

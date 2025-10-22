@@ -19,4 +19,7 @@ public interface SlotClient {
             @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam("endTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime
     );
+
+    @GetMapping("/api/v1/slots")
+    List<SlotResponseDto> getAllSlots();
 }

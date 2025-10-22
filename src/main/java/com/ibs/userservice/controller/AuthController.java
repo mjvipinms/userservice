@@ -49,8 +49,10 @@ public class AuthController {
             var userDet = appUserDetails.user();
             Integer userId = userDet.getUserId();
             String userName = userDet.getUserName();
+            String userFullName = userDet.getFullName();
 
-            return ResponseEntity.ok(new AuthResponse(token,role,userId,userName));
+
+            return ResponseEntity.ok(new AuthResponse(token,role,userId,userName,userFullName));
         } catch (Exception e) {
             log.error("Exception occurred in login {}", e.getMessage());
             throw new RuntimeException(e);
