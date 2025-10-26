@@ -1,8 +1,11 @@
 package com.ibs.userservice.dtos.requestDtos;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuthRequest {
     private String username;
     private String password;

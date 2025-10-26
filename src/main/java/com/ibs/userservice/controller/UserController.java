@@ -3,6 +3,7 @@ package com.ibs.userservice.controller;
 import com.ibs.userservice.dtos.requestDtos.UserRequestDTO;
 import com.ibs.userservice.dtos.responseDtos.UserResponseDTO;
 import com.ibs.userservice.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,14 +19,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
     /**
      *
      * @param dto contains the data to be saved

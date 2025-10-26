@@ -2,6 +2,7 @@ package com.ibs.userservice.controller;
 
 import com.ibs.userservice.entity.Role;
 import com.ibs.userservice.service.RoleService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,13 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/roles")
+@RequiredArgsConstructor
 public class RoleController {
 
     private final RoleService roleService;
-
-    public RoleController(RoleService roleService){
-        this.roleService = roleService;
-    }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'HR', 'PANEL')")

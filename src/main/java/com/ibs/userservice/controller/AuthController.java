@@ -4,6 +4,8 @@ import com.ibs.userservice.dtos.requestDtos.AuthRequest;
 import com.ibs.userservice.dtos.responseDtos.AuthResponse;
 import com.ibs.userservice.security.AppUserDetails;
 import com.ibs.userservice.security.JwtUtil;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,17 +19,12 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
-
-    public AuthController(AuthenticationManager authManager, JwtUtil jwtUtil) {
-        this.authManager = authManager;
-        this.jwtUtil = jwtUtil;
-    }
-
     /**
      *
      * @param request is the input object with valid username and password
