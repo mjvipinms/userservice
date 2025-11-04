@@ -7,6 +7,7 @@ import com.ibs.userservice.entity.Role;
 import com.ibs.userservice.entity.User;
 
 public class UserMapper {
+    private UserMapper(){}
 
     public static UserResponseDTO toResponseDTO(User user) {
         return new UserResponseDTO(
