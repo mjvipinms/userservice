@@ -58,8 +58,6 @@ class AuthControllerTest {
 
         // Mock authorities
         var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-      //  lenient().when(appUserDetails.getAuthorities()).thenReturn(authorities);
-
         // Mock other behavior
         when(appUserDetails.getUsername()).thenReturn("testUser");
         when(appUserDetails.user()).thenReturn(userEntity);
